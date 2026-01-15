@@ -1,4 +1,9 @@
 import { useState } from "react";
+import "./styles/global.css";
+import "./styles/layout.css";
+
+import AuthForm from "./components/AuthForm";
+import UploadForm from "./components/UploadForm";
 
 function App() {
   const [username, setUsername] = useState("");
@@ -42,9 +47,7 @@ function App() {
         body: JSON.stringify({ username, password }),
       });
 
-      if (!res.ok) {
-        throw new Error("Login failed");
-      }
+      if (!res.ok) throw new Error("Login failed");
 
       const data = await res.json();
       localStorage.setItem("token", data.access_token);
@@ -93,42 +96,29 @@ function App() {
   };
 
 return (
-    <div style={{ padding: 20 }}>
-      <h1>OCR System</h1>
+   <div className="page">
+      <div className="card">
+        <h1 className="title">OCR System</h1>
 
-      {!token ? (
-        <>
-          <h2>Auth</h2>
-          <input
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+        {!token ? (
+          <AuthForm
+            username={username}
+            password={password}
+            setUsername={setUsername}
+            setPassword={setPassword}
+            onRegister={register}
+            onLogin={login}
+            message={message}
           />
-          <br />
-          <input
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+        ) : (
+          <UploadForm
+            onLogout={logout}
+            setFile={setFile}
+            onUpload={upload}
+            result={result}
           />
-          <br />
-          <button onClick={register}>Register</button>
-          <button onClick={login}>Login</button>
-          <p>{message}</p>
-        </>
-      ) : (
-        <>
-          <button onClick={logout}>Logout</button>
-
-          <h2>Upload image</h2>
-          <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-          <br />
-          <button onClick={upload}>Upload</button>
-
-          <p>Result:</p>
-          <pre>{result}</pre>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }
