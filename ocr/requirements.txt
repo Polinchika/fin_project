@@ -1,3 +1,5 @@
-flask
-pytesseract
+torch
+torchvision
+transformers
 Pillow
+flask

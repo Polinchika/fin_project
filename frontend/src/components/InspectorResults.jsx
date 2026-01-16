@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { downloadFile } from "../utils/downloadFile";
+import { downloadDocument } from "../utils/downloadDocument";
+import { downloadDocx } from "../utils/downloadDocx";
 
 function InspectorResults() {
   const [results, setResults] = useState([]);
@@ -39,7 +41,13 @@ function InspectorResults() {
           </details>
 
           <button onClick={() => downloadFile(item.file_id, item.filename)}>
-            Скачать файл
+            Скачать исходный файл
+          </button>
+          <button onClick={() => downloadDocument(item.file_id)}>
+            Скачать PDF с текстом
+          </button>
+          <button onClick={() => downloadDocx(item.file_id)}>
+            Скачать DOCX
           </button>
         </div>
       ))}

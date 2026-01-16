@@ -1,12 +1,14 @@
 from datetime import datetime
 from bson import ObjectId
 
-from fastapi import FastAPI, UploadFile, File, Depends
+from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+
 from users import router as auth_router
 from ocr_client import send_to_ocr
 from db import results_collection, users_collection, save_result, fs
 from deps import require_role
+from document_generator import generate_pdf, generate_docx
 
 app = FastAPI(root_path="/api")
 app.include_router(auth_router)
@@ -22,9 +24,7 @@ async def upload(
         filename=file.filename,
         content_type=file.content_type
     )
-
     text = await send_to_ocr(file_bytes)
-
     # result = save_result(file.filename, text)
     results_collection.insert_one({
         "file_id": file_id,
@@ -33,6 +33,7 @@ async def upload(
         "created_at": datetime.utcnow()
     })
     return { "result_id": str(file_id), "text": text }
+
 
 @app.get("/results/self")
 def get_my_results(user=Depends(require_role("user"))):
@@ -50,6 +51,7 @@ def get_my_results(user=Depends(require_role("user"))):
             "ocr_text": r.get("ocr_text", "")
         })
     return response
+
 
 @app.get("/results/all")
 def get_all_results(user=Depends(require_role("inspector"))):
@@ -81,7 +83,6 @@ def download_file(
     user=Depends(require_role("user", "inspector"))
 ):
     grid_out = fs.get(ObjectId(file_id))
-
     return StreamingResponse(
         grid_out,
         media_type=grid_out.content_type,
@@ -89,6 +90,59 @@ def download_file(
             "Content-Disposition": f'attachment; filename="{grid_out.filename}"'
         }
     )
+
+
+@app.get("/results/{result_id}/document")
+def download_document(
+    result_id: str,
+    user=Depends(require_role("inspector"))
+):
+    result = results_collection.find_one(
+        {"file_id": ObjectId(result_id)}
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Result not found")
+
+    pdf = generate_pdf(
+        text=result.get("ocr_text", ""),
+        title="Распознанный документ"
+    )
+
+    return StreamingResponse(
+        pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": 'attachment; filename="ocr_result.pdf"'
+        }
+    )
+
+
+@app.get("/results/{result_id}/text_document")
+def download_docx(
+    result_id: str,
+    user=Depends(require_role("inspector"))
+):
+    result = results_collection.find_one(
+        {"file_id": ObjectId(result_id)}
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Result not found")
+
+    docx_file = generate_docx(
+        text=result.get("ocr_text", ""),
+        title="Распознанный текст документа"
+    )
+
+    return StreamingResponse(
+        docx_file,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={
+            "Content-Disposition": 'attachment; filename="ocr_result.docx"'
+        }
+    )
+
 
 @app.get("/ping")
 def ping():
