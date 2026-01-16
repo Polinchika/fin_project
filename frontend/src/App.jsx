@@ -1,7 +1,6 @@
 import { useState } from "react";
-import "./styles/global.css";
-import "./styles/layout.css";
 
+import Header from "./components/Header";
 import AuthForm from "./components/AuthForm";
 import UploadForm from "./components/UploadForm";
 
@@ -27,12 +26,8 @@ function App() {
           role: "user",
         }),
       });
-
-      if (!res.ok) {
-        throw new Error("Registration failed");
-      }
-
-      setMessage("Registration successful. You can login.");
+      if (!res.ok) throw new Error("Не удалось зарегистрировать пользователя.");
+      setMessage("Успешная регистрация! Вы можете войти.");
     } catch (err) {
       setMessage(err.message);
     }
@@ -46,13 +41,11 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-
-      if (!res.ok) throw new Error("Login failed");
-
+      if (!res.ok) throw new Error("Неудачная попытка входа. Проверьте логин или пароль.");
       const data = await res.json();
       localStorage.setItem("token", data.access_token);
       setToken(data.access_token);
-      setMessage("Logged in");
+      setMessage("");
     } catch (err) {
       setMessage(err.message);
     }
@@ -61,8 +54,12 @@ function App() {
 
   const logout = () => {
     localStorage.removeItem("token");
-    setToken(null);
-    setResult("");
+      setToken(null);
+      setUsername("");
+      setPassword("");
+      setMessage("");
+      setFile(null);
+      setResult("");
   };
 
 
@@ -83,43 +80,33 @@ function App() {
         },
         body: formData,
       });
-
-      if (!res.ok) {
-        throw new Error(`Upload failed: ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error(`Не удалось загрузить файл. ${res.status}`);
       const data = await res.json();
       setResult(data.text);
     } catch (error) {
-      setResult(`Error: ${error.message}`);
+      setResult(`Ошибка: ${error.message}`);
     }
   };
 
 return (
-   <div className="page">
-      <div className="card">
-        <h1 className="title">OCR System</h1>
-
+   <>
+      <Header token={token} onLogout={logout} />
+      <main>
         {!token ? (
           <AuthForm
             username={username}
             password={password}
             setUsername={setUsername}
             setPassword={setPassword}
-            onRegister={register}
             onLogin={login}
+            onRegister={register}
             message={message}
           />
         ) : (
-          <UploadForm
-            onLogout={logout}
-            setFile={setFile}
-            onUpload={upload}
-            result={result}
-          />
+          <UploadForm onUpload={upload} setFile={setFile} result={result} />
         )}
-      </div>
-    </div>
+      </main>
+    </>
   );
 }
 

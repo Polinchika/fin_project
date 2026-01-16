@@ -1,39 +1,41 @@
 import "../styles/auth.css";
 
-export default function AuthForm({
+function AuthForm({
   username,
   password,
   setUsername,
   setPassword,
-  onRegister,
   onLogin,
+  onRegister,
   message,
 }) {
   return (
-    <div className="auth-form">
+    <div className="auth">
+      <h2>Вход / регистрация</h2>
+
       <input
-        placeholder="Username"
+        placeholder="Имя пользователя"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
       />
 
       <input
-        placeholder="Password"
+        placeholder="Пароль"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
 
-      <div className="auth-actions">
-        <button className="btn-secondary" onClick={onRegister}>
-          Register
-        </button>
-        <button className="btn-primary" onClick={onLogin}>
-          Login
+      <div className="auth__buttons">
+        <button onClick={onLogin}>Войти</button>
+        <button className="secondary" onClick={onRegister}>
+          Регистрация
         </button>
       </div>
 
-      {message && <div className="message">{message}</div>}
+      {message && <p className="auth__message">{message}</p>}
     </div>
   );
 }
+
+export default AuthForm;

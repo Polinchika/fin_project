@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Backend specific
+backend/app/__pycache__/
+
+# Virtual environments
+.venv/
+venv/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/

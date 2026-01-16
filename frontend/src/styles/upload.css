@@ -1,16 +1,27 @@
-.upload-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.upload {
+  background-color: #ffffff;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
 
-.result-box {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+.upload h2 {
+  margin-bottom: 20px;
+}
+
+.upload button {
+  margin-top: 16px;
+  padding: 12px 20px;
   border-radius: 8px;
-  padding: 12px;
-  max-height: 200px;
-  overflow-y: auto;
-  font-family: monospace;
-  font-size: 13px;
+  border: none;
+  background-color: #16a34a;
+  color: white;
+}
+
+.upload__result {
+  margin-top: 20px;
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  white-space: pre-wrap;
 }

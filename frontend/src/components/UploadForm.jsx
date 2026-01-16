@@ -1,28 +1,22 @@
 import "../styles/upload.css";
 
-export default function UploadForm({
-  onLogout,
-  setFile,
-  onUpload,
-  result,
-}) {
+function UploadForm({ onUpload, setFile, result }) {
   return (
-    <div className="upload-form">
-      <button className="btn-secondary" onClick={onLogout}>
-        Logout
-      </button>
+    <div className="upload">
+      <h2>Загрузка изображения</h2>
 
       <input type="file" onChange={(e) => setFile(e.target.files[0])} />
 
-      <button className="btn-primary" onClick={onUpload}>
-        Upload image
-      </button>
+      <button onClick={onUpload}>Распознать текст</button>
 
       {result && (
-        <div className="result-box">
-          <pre>{result}</pre>
-        </div>
+        <>
+          <h3>Результат:</h3>
+          <pre className="upload__result">{result}</pre>
+        </>
       )}
     </div>
   );
 }
+
+export default UploadForm;
