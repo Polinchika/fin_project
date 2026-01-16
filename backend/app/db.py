@@ -1,8 +1,12 @@
 from pymongo import MongoClient
+from gridfs import GridFS
 import os
 
 client = MongoClient(os.getenv("MONGO_URI", "mongodb://localhost:27018"))
 db = client["ocr_db"]
+
+fs = GridFS(db)
+
 results_collection = db["results"]
 users_collection = db["users"]
 

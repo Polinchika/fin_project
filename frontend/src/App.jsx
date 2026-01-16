@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import AuthForm from "./components/AuthForm";
 import UploadForm from "./components/UploadForm";
 import InspectorResults from "./components/InspectorResults";
+import MyResults from "./components/MyResults";
 
 
 function parseJwt(token) {
@@ -115,7 +116,10 @@ return (
         ) : (
           <>
             {role === "user" && (
-              <UploadForm onUpload={upload} setFile={setFile} result={result} />
+              <>
+                <UploadForm onUpload={upload} setFile={setFile} result={result} />
+                <MyResults token={token} />
+              </>
             )}
             {role === "inspector" && (
             <InspectorResults />

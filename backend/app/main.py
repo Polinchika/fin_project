@@ -1,7 +1,11 @@
+from datetime import datetime
+from bson import ObjectId
+
 from fastapi import FastAPI, UploadFile, File, Depends
+from fastapi.responses import StreamingResponse
 from users import router as auth_router
 from ocr_client import send_to_ocr
-from db import results_collection, save_result
+from db import results_collection, users_collection, save_result, fs
 from deps import require_role
 
 app = FastAPI(root_path="/api")
@@ -12,32 +16,79 @@ async def upload(
     file: UploadFile = File(...),
     user=Depends(require_role("user"))
 ):
-    contents = await file.read()
-    text = await send_to_ocr(contents)
+    file_bytes = await file.read()
+    file_id = fs.put(
+        file_bytes,
+        filename=file.filename,
+        content_type=file.content_type
+    )
+
+    text = await send_to_ocr(file_bytes)
 
     # result = save_result(file.filename, text)
     results_collection.insert_one({
-        "filename": file.filename,
-        "text": text,
-        "user_id": user["sub"]
+        "file_id": file_id,
+        "ocr_text": text,
+        "user_id": user["sub"],
+        "created_at": datetime.utcnow()
     })
-    return {"filename": file.filename, "text": text}
+    return { "result_id": str(file_id), "text": text }
 
 @app.get("/results/self")
 def get_my_results(user=Depends(require_role("user"))):
-    return list(
-        results_collection.find(
-            {"user_id": user["sub"]},
-            {"_id": 0}
-        )
+    results = results_collection.find(
+        {"user_id": user["sub"]}
     )
+    response = []
+    for r in results:
+        file_meta = fs.get(r["file_id"])
+        response.append({
+            "file_id": str(r["file_id"]),
+            "filename": file_meta.filename,
+            "content_type": file_meta.content_type,
+            "created_at": r.get("created_at"),
+            "ocr_text": r.get("ocr_text", "")
+        })
+    return response
 
 @app.get("/results/all")
 def get_all_results(user=Depends(require_role("inspector"))):
-    return list(
-        results_collection.find({}, {"_id": 0})
-    )
+    results = results_collection.find({})
+    response = []
+    for r in results:
+        file_meta = fs.get(r["file_id"])
 
+        uploader = users_collection.find_one(
+            {"_id": ObjectId(r["user_id"])},
+            {"_id": 0, "username": 1}
+        )
+
+        response.append({
+            "file_id": str(r["file_id"]),
+            "filename": file_meta.filename,
+            "content_type": file_meta.content_type,
+            "created_at": r.get("created_at"),
+            "ocr_text": r.get("ocr_text", ""),
+            "user_id": r.get("user_id"),
+            "username": uploader["username"] if uploader else "unknown"
+        })
+    return response
+
+
+@app.get("/files/{file_id}")
+def download_file(
+    file_id: str,
+    user=Depends(require_role("user", "inspector"))
+):
+    grid_out = fs.get(ObjectId(file_id))
+
+    return StreamingResponse(
+        grid_out,
+        media_type=grid_out.content_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{grid_out.filename}"'
+        }
+    )
 
 @app.get("/ping")
 def ping():
