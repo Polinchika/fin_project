@@ -4,6 +4,6 @@ httpx
 pymongo
 python-multipart
 requests
-python-jose 
+python-jose[cryptography]
 passlib[bcrypt]
 bcrypt==3.2.2

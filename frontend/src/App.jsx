@@ -3,6 +3,14 @@ import { useState } from "react";
 import Header from "./components/Header";
 import AuthForm from "./components/AuthForm";
 import UploadForm from "./components/UploadForm";
+import InspectorResults from "./components/InspectorResults";
+
+
+function parseJwt(token) {
+  if (!token) return null;
+  const base64 = token.split(".")[1];
+  return JSON.parse(atob(base64));
+}
 
 function App() {
   const [username, setUsername] = useState("");
@@ -14,6 +22,8 @@ function App() {
 
   const API_URL = "/api";
 
+  const payload = parseJwt(token);
+  const role = payload?.role;
 
   const register = async () => {
     try {
@@ -103,7 +113,14 @@ return (
             message={message}
           />
         ) : (
-          <UploadForm onUpload={upload} setFile={setFile} result={result} />
+          <>
+            {role === "user" && (
+              <UploadForm onUpload={upload} setFile={setFile} result={result} />
+            )}
+            {role === "inspector" && (
+            <InspectorResults />
+            )}
+          </>
         )}
       </main>
     </>

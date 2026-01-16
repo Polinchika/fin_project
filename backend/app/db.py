@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 import os
 
-client = MongoClient(os.getenv("MONGO_URI", "mongodb://localhost:27017"))
+client = MongoClient(os.getenv("MONGO_URI", "mongodb://localhost:27018"))
 db = client["ocr_db"]
 results_collection = db["results"]
 users_collection = db["users"]
