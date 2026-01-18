@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { downloadFile } from "../utils/downloadFile";
 
-function MyResults({ token }) {
+function MyResults({ token, refreshKey }) {
   const [results, setResults] = useState([]);
 
   useEffect(() => {
+    if (!token) return;
     fetch("/api/results/self", {
       headers: {
         Authorization: `Bearer ${token}`
@@ -12,7 +13,7 @@ function MyResults({ token }) {
     })
       .then(res => res.json())
       .then(data => setResults(data));
-  }, [token]);
+  }, [token, refreshKey]);
 
   return (
     <div>
@@ -27,7 +28,24 @@ function MyResults({ token }) {
 
           <details>
             <summary>Распознанный текст</summary>
-            <pre>{item.ocr_text}</pre>
+            {item.blocks?.blocks && item.blocks.blocks.length > 0 ? (
+              item.blocks.blocks.map((block, idx) => (
+                <div key={idx} style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, color: "#666" }}>
+                    {block.label} · conf: {block.confidence?.toFixed(2)}
+                  </div>
+                  <pre style={{ whiteSpace: "pre-wrap" }}>
+                    {block.text}
+                  </pre>
+                </div>
+              ))
+            ) : item.blocks?.full_text ? (
+              <pre style={{ whiteSpace: "pre-wrap" }}>
+                {item.blocks.full_text}
+              </pre>
+            ) : (
+              <p>Нет данных OCR</p>
+            )}
           </details>
 
           <button onClick={() => downloadFile(item.file_id, item.filename)}>

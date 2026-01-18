@@ -19,6 +19,7 @@ function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [file, setFile] = useState(null);
   const [result, setResult] = useState("");
+  const [refreshResults, setRefreshResults] = useState(0);
   const [message, setMessage] = useState("");
 
   const API_URL = "/api";
@@ -94,6 +95,7 @@ function App() {
       if (!res.ok) throw new Error(`Не удалось загрузить файл. ${res.status}`);
       const data = await res.json();
       setResult(data.text);
+      setRefreshResults(prev => prev + 1);
     } catch (error) {
       setResult(`Ошибка: ${error.message}`);
     }
@@ -118,7 +120,7 @@ return (
             {role === "user" && (
               <>
                 <UploadForm onUpload={upload} setFile={setFile} result={result} />
-                <MyResults token={token} />
+                <MyResults token={token} refreshKey={refreshResults} />
               </>
             )}
             {role === "inspector" && (

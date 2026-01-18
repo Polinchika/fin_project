@@ -1,6 +1,15 @@
 import torch
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel
 from PIL import Image
+import logging
+import sys
+
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format="%(asctime)s [OCR] %(levelname)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -13,6 +22,7 @@ print("TrOCR loaded")
 
 
 def recognize_text(image: Image.Image) -> str:
+    logger.info("START recognize_text TrOCR")
     image = image.convert("RGB")
 
     pixel_values = processor(

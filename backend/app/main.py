@@ -24,15 +24,17 @@ async def upload(
         filename=file.filename,
         content_type=file.content_type
     )
-    text = await send_to_ocr(file_bytes)
+
+    ocr_result = await send_to_ocr(file_bytes)
+
     # result = save_result(file.filename, text)
     results_collection.insert_one({
         "file_id": file_id,
-        "ocr_text": text,
+        "blocks": ocr_result["blocks"],
         "user_id": user["sub"],
         "created_at": datetime.utcnow()
     })
-    return { "result_id": str(file_id), "text": text }
+    return { "result_id": str(file_id), "text": ocr_result["blocks"] }
 
 
 @app.get("/results/self")
@@ -48,7 +50,7 @@ def get_my_results(user=Depends(require_role("user"))):
             "filename": file_meta.filename,
             "content_type": file_meta.content_type,
             "created_at": r.get("created_at"),
-            "ocr_text": r.get("ocr_text", "")
+            "blocks": r.get("blocks", "")
         })
     return response
 
@@ -70,7 +72,7 @@ def get_all_results(user=Depends(require_role("inspector"))):
             "filename": file_meta.filename,
             "content_type": file_meta.content_type,
             "created_at": r.get("created_at"),
-            "ocr_text": r.get("ocr_text", ""),
+            "blocks": r.get("blocks", ""),
             "user_id": r.get("user_id"),
             "username": uploader["username"] if uploader else "unknown"
         })

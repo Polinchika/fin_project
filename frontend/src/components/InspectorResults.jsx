@@ -5,11 +5,13 @@ import { downloadDocx } from "../utils/downloadDocx";
 
 function InspectorResults() {
   const [results, setResults] = useState([]);
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
+    if (!token) return;
     fetch("/api/results/all", {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token}`,
       },
     })
       .then(res => res.json())
@@ -37,18 +39,41 @@ function InspectorResults() {
 
           <details>
             <summary>Распознанный текст</summary>
-            <pre>{item.ocr_text}</pre>
+            {/* === YOLO нашёл блоки === */}
+            {item.blocks?.blocks && item.blocks.blocks.length > 0 ? (
+              item.blocks.blocks.map((block, idx) => (
+                <div key={idx} style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, color: "#666" }}>
+                    {block.label} · conf: {block.confidence?.toFixed(2)}
+                  </div>
+                  <pre style={{ whiteSpace: "pre-wrap" }}>
+                    {block.text}
+                  </pre>
+                </div>
+              ))
+            ) : item.blocks?.full_text ? (
+              /* === YOLO ничего не нашёл, fallback === */
+              <pre style={{ whiteSpace: "pre-wrap" }}>
+                {item.blocks.full_text}
+              </pre>
+            ) : (
+              <p>Нет данных OCR</p>
+            )}
           </details>
 
-          <button onClick={() => downloadFile(item.file_id, item.filename)}>
-            Скачать исходный файл
-          </button>
-          <button onClick={() => downloadDocument(item.file_id)}>
-            Скачать PDF с текстом
-          </button>
-          <button onClick={() => downloadDocx(item.file_id)}>
-            Скачать DOCX
-          </button>
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <button onClick={() => downloadFile(item.file_id, item.filename)}>
+              Скачать исходный файл
+            </button>
+
+            <button onClick={() => downloadDocument(item.file_id)}>
+              Скачать PDF с текстом
+            </button>
+
+            <button onClick={() => downloadDocx(item.file_id)}>
+              Скачать DOCX
+            </button>
+          </div>
         </div>
       ))}
     </div>

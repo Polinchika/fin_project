@@ -3,3 +3,5 @@ torchvision
 transformers
 Pillow
 flask
+ultralytics
+opencv-python-headless
