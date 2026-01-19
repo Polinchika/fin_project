@@ -9,10 +9,12 @@ function UploadForm({ onUpload, setFile, result }) {
 
       <button onClick={onUpload}>Распознать текст</button>
 
-      {result && (
+      {result?.full_text && (
         <>
-          <h3>Результат:</h3>
-          <pre className="upload__result">{result}</pre>
+          <h3>Результат распознавания:</h3>
+          <pre className="upload__result">
+            {result.full_text}
+          </pre>
         </>
       )}
     </div>

@@ -94,6 +94,19 @@ def download_file(
     )
 
 
+def extract_labeled_text(result: dict) -> str:
+    if not result:
+        return ""
+    blocks = result.get("blocks", []).get("blocks", [])
+    lines = []
+    for block in blocks:
+        text = block.get("text")
+        label = block.get("label", "text")
+        if not text:
+            continue
+        lines.append(f"{label}: {text.strip()}")
+    return "\n".join(lines)
+
 @app.get("/results/{result_id}/document")
 def download_document(
     result_id: str,
@@ -106,8 +119,10 @@ def download_document(
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
 
+    text = extract_labeled_text(result)
+
     pdf = generate_pdf(
-        text=result.get("ocr_text", ""),
+        text=text,
         title="Распознанный документ"
     )
 
@@ -131,9 +146,11 @@ def download_docx(
 
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
+    
+    text = extract_labeled_text(result)
 
     docx_file = generate_docx(
-        text=result.get("ocr_text", ""),
+        text=text,
         title="Распознанный текст документа"
     )
 

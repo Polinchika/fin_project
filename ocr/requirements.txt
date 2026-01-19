@@ -1,7 +1,10 @@
-torch
-torchvision
-transformers
+transformers==4.36.2
+
+# --- OCR ---
+paddleocr==2.7.0
+paddlepaddle==2.6.2
+
+# --- utils ---
 Pillow
 flask
-ultralytics
 opencv-python-headless

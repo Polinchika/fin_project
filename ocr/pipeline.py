@@ -12,17 +12,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def analyze_document(image: Image.Image):
-    logger.info("START analyze_document")
+    print("START analyze_document")
 
     blocks = detect_layout(image) or []
-    logger.info(f"YOLO blocks count: {len(blocks)}")
+    print(f"----------blocks count----------: {len(blocks)}")
 
     result_blocks = []
     full_text_parts = []
 
     if len(blocks) == 0:
-        # === YOLO ничего не нашёл ===
-        logger.warning("---------YOLO ничего не нашёл---------")
+        logger.warning("---------Не найден ни один текстовый блок---------")
         text = recognize_text(image)
         w, h = image.size
         result_blocks.append({
@@ -32,12 +31,12 @@ def analyze_document(image: Image.Image):
             "text": text,
         })
     else:
-        # === YOLO нашёл блоки ===
         for block in blocks:
             x1, y1, x2, y2 = block["bbox"]
             cropped = image.crop((x1, y1, x2, y2))
-
+            print("----------N-fragment start----------")
             text = recognize_text(cropped)
+            print("----------N-fragment end----------")
             full_text_parts.append(text)
 
             result_blocks.append({
