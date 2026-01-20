@@ -3,6 +3,8 @@
   padding: 32px;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  max-width: 800px;
+  margin: 40px auto;
 }
 
 .auth h2 {

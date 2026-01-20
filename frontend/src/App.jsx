@@ -19,6 +19,7 @@ function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [file, setFile] = useState(null);
   const [result, setResult] = useState("");
+  const [resultId, setResultId] = useState(null);
   const [refreshResults, setRefreshResults] = useState(0);
   const [message, setMessage] = useState("");
 
@@ -93,12 +94,28 @@ function App() {
         body: formData,
       });
       if (!res.ok) throw new Error(`Не удалось загрузить файл. ${res.status}`);
+
       const data = await res.json();
-      setResult(data.text);
+      setResultId(data.result_id);
+      setResult({ blocks: data.text.blocks });
       setRefreshResults(prev => prev + 1);
+
     } catch (error) {
       setResult(`Ошибка: ${error.message}`);
     }
+  };
+
+  const saveBlocks = async (blocks) => {
+    await fetch(`${API_URL}/results/${resultId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ blocks }),
+    });
+
+    alert("Изменения сохранены");
   };
 
 return (
@@ -119,7 +136,7 @@ return (
           <>
             {role === "user" && (
               <>
-                <UploadForm onUpload={upload} setFile={setFile} result={result} />
+                <UploadForm onUpload={upload} setFile={setFile} result={result} onSave={saveBlocks} />
                 <MyResults token={token} refreshKey={refreshResults} />
               </>
             )}

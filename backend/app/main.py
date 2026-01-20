@@ -1,7 +1,7 @@
 from datetime import datetime
 from bson import ObjectId
 
-from fastapi import FastAPI, UploadFile, File, Depends, HTTPException
+from fastapi import FastAPI, UploadFile, HTTPException, File, Depends, Body
 from fastapi.responses import StreamingResponse
 
 from users import router as auth_router
@@ -35,6 +35,38 @@ async def upload(
         "created_at": datetime.utcnow()
     })
     return { "result_id": str(file_id), "text": ocr_result["blocks"] }
+
+
+@app.put("/results/{result_id}")
+async def update_result(
+    result_id: str,
+    payload: dict = Body(...),
+    user=Depends(require_role("user"))
+):
+    edited_blocks = payload.get("blocks")
+
+    if not isinstance(edited_blocks, list):
+        raise HTTPException(status_code=400, detail="blocks must be array")
+
+    full_text = "\n\n".join(
+        block.get("text", "") for block in edited_blocks if block.get("text")
+    )
+
+    results_collection.update_one(
+        {
+            "file_id": ObjectId(result_id),
+            "user_id": user["sub"]
+        },
+        {
+            "$set": {
+                "blocks.blocks": edited_blocks,
+                "blocks.full_text": full_text,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+
+    return {"status": "ok"}
 
 
 @app.get("/results/self")
@@ -147,12 +179,14 @@ def download_docx(
     if not result:
         raise HTTPException(status_code=404, detail="Result not found")
     
-    text = extract_labeled_text(result)
+    values = {}
+    for block in result["blocks"]["blocks"]:
+        label = block.get("label")
+        text = block.get("text")
+        if label and text:
+            values[label] = text
 
-    docx_file = generate_docx(
-        text=text,
-        title="Распознанный текст документа"
-    )
+    docx_file = generate_docx(values=values)
 
     return StreamingResponse(
         docx_file,

@@ -23,6 +23,7 @@ def analyze_document(image: Image.Image):
     if len(blocks) == 0:
         logger.warning("---------Не найден ни один текстовый блок---------")
         text = recognize_text(image)
+        full_text_parts.append(text)
         w, h = image.size
         result_blocks.append({
             "bbox": (0, 0, w, h),
@@ -34,9 +35,7 @@ def analyze_document(image: Image.Image):
         for block in blocks:
             x1, y1, x2, y2 = block["bbox"]
             cropped = image.crop((x1, y1, x2, y2))
-            print("----------N-fragment start----------")
             text = recognize_text(cropped)
-            print("----------N-fragment end----------")
             full_text_parts.append(text)
 
             result_blocks.append({

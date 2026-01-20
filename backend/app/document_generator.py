@@ -4,6 +4,19 @@ from reportlab.pdfgen import canvas
 from docx import Document
 from docx.shared import Pt
 
+def replace_placeholders(doc: Document, values: dict):
+    for paragraph in doc.paragraphs:
+        original_text = paragraph.text
+
+        new_text = original_text
+        for key, val in values.items():
+            placeholder = f"{{{{{key}}}}}"
+            new_text = new_text.replace(placeholder, val)
+
+        if new_text != original_text:
+            paragraph.clear()
+            paragraph.add_run(new_text)
+
 
 def generate_pdf(text: str, title: str) -> BytesIO:
     buffer = BytesIO()
@@ -31,17 +44,10 @@ def generate_pdf(text: str, title: str) -> BytesIO:
     return buffer
 
 
-def generate_docx(text: str, title: str) -> BytesIO:
-    doc = Document()
+def generate_docx(values: dict) -> BytesIO:
+    doc = Document("template_1.docx")
 
-    heading = doc.add_heading(title, level=1)
-    heading.alignment = 1
-
-    doc.add_paragraph("")
-
-    for line in text.splitlines():
-        p = doc.add_paragraph(line)
-        p.paragraph_format.space_after = Pt(6)
+    replace_placeholders(doc, values)
 
     buffer = BytesIO()
     doc.save(buffer)
