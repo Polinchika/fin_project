@@ -14,3 +14,7 @@ venv/
 .DS_Store
 .idea/
 .vscode/
+
+# OCR
+ocr/models/
+ocr/output_blocks/

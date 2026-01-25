@@ -1,41 +1,20 @@
-import torch
-from transformers import TrOCRProcessor, VisionEncoderDecoderModel
+import numpy as np
 from PIL import Image
-import logging
-import sys
+import easyocr
 
-logging.basicConfig(
-    level=logging.INFO,
-    stream=sys.stdout,
-    format="%(asctime)s [OCR] %(levelname)s: %(message)s",
+print("Loading EasyOCR model...")
+reader = easyocr.Reader(
+    lang_list=['ru'],
+    gpu=False
 )
-logger = logging.getLogger(__name__)
-
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-print("Loading TrOCR model...")
-processor = TrOCRProcessor.from_pretrained("raxtemur/trocr-base-ru")
-model = VisionEncoderDecoderModel.from_pretrained("raxtemur/trocr-base-ru")
-model.to(DEVICE)
-model.eval()
-print("TrOCR loaded")
+print("EasyOCR loaded")
 
 
 def recognize_text(image: Image.Image) -> str:
-    logger.info("START recognize_text TrOCR")
+    print("START recognize_text EasyOCR")
     image = image.convert("RGB")
+    image_np = np.array(image)
 
-    pixel_values = processor(
-        image,
-        return_tensors="pt"
-    ).pixel_values.to(DEVICE)
-
-    with torch.no_grad():
-        generated_ids = model.generate(pixel_values)
-
-    text = processor.batch_decode(
-        generated_ids,
-        skip_special_tokens=True
-    )[0]
-
+    result = reader.readtext(image_np)
+    text = " ".join([text for (_, text, _) in result])
     return text
