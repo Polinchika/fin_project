@@ -2,7 +2,7 @@ from PIL import Image
 from layout_detector import detect_layout
 from trocr_model import recognize_text
 import logging
-import sys
+import sys #, os
 
 logging.basicConfig(
     level=logging.INFO,
@@ -11,12 +11,45 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# def save_cropped_blocks(image: Image.Image, blocks, output_dir="output_blocks"):
+#     """Сохраняет фрагменты изображения в файлы"""
+    
+#     # Создаем директорию, если ее нет
+#     os.makedirs(output_dir, exist_ok=True)
+    
+#     saved_files = []
+    
+#     for i, block in enumerate(blocks):
+#         bbox = block["bbox"]
+#         label = block["label"]
+#         conf = block["confidence"]
+        
+#         # Обрезаем изображение
+#         cropped_img = image.crop(bbox)
+        
+#         # Генерируем имя файла
+#         filename = f"block_{i:03d}_{label}_{conf:.2f}.png"
+#         filepath = os.path.join(output_dir, filename)
+        
+#         # Сохраняем
+#         cropped_img.save(filepath)
+#         saved_files.append({
+#             "filepath": filepath,
+#             "bbox": bbox,
+#             "label": label,
+#             "confidence": conf
+#         })
+        
+#         print(f"Сохранено: {filepath}")
+    
+#     return saved_files
+
 def analyze_document(image: Image.Image):
     print("START analyze_document")
 
     blocks = detect_layout(image) or []
     print(f"----------blocks count----------: {len(blocks)}")
-
+    # saved_files = save_cropped_blocks(image, blocks)
     result_blocks = []
     full_text_parts = []
 
