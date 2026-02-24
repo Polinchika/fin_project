@@ -1,6 +1,4 @@
 # --- OCR ---
-paddleocr==2.7.0
-paddlepaddle==2.6.2
 easyocr
 
 # --- utils ---

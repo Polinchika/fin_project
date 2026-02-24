@@ -1,4 +1,4 @@
-FROM python:3.9-slim
+FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 
 RUN apt-get update && \
     apt-get install -y \
@@ -22,6 +22,8 @@ ENV PYTHONUNBUFFERED=1
 
 COPY . .
 RUN ls -lh models/
+
+RUN python -c "import torch; print('CUDA available:', torch.cuda.is_available()); print('CUDA devices:', torch.cuda.device_count() if torch.cuda.is_available() else 'None')" || echo "PyTorch CUDA check failed"
 
 CMD ["python", "app.py"]
 
