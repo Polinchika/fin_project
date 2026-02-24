@@ -32,6 +32,9 @@ services:
     working_dir: /app
     volumes:
       - ./ocr:/app
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     command: python app.py
     ports:
       - "7070:7070"
